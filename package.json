@@ -1,0 +1,33 @@
+{
+  "name": "mediphor-login-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
+    "aws-sdk": "^2.931.0",
+    "bcrypt": "^5.0.1",
+    "config": "^3.3.6",
+    "cookie": "^0.4.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.12.14",
+    "multer": "^1.4.2",
+    "multer-gridfs-storage": "^5.0.0",
+    "multiparty": "^4.2.2",
+    "serve-index": "^1.9.1"
+  },
+  "devDependencies": {
+    "cors": "^2.8.5"
+  }
+}

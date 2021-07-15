@@ -1,0 +1,2 @@
+openssl enc -aes-256-cbc -in .env -out secrets.txt.enc -md md5
+openssl enc -d -aes-256-cbc -in secrets.txt.enc -out .env -md md5
