@@ -17,6 +17,8 @@ var url = process.env.MONGO_URI
 var key = process.env.REGISTRATION_KEY 
 
 router.post('/', function(req, res) {
+    console.log(req.body)
+    console.log(req.body.key + " : " + key)
     if (req.body.key == key) {
         res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
         var username = String(req.body.username)
@@ -41,14 +43,14 @@ router.post('/', function(req, res) {
                         })
                     } else {
                         console.log("User with same username")
+                        res.send("409")
                     }
                 })
             })
         })
-        if (inserted) ; else res.send("Error")
     } else {
         console.log("Wrong Key")
-        res.send("400")
+        res.send("401")
     }
 })
 
