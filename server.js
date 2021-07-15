@@ -37,4 +37,4 @@ app.use('/register', registerRouter)
 app.use('/mediphors', mediphorsRouter)
 
 
-app.listen(8080, () => console.log('API is running on port 8080'))
+app.listen(process.env.PORT, () => console.log('API is running on port ', process.env.PORT))
