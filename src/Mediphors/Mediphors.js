@@ -66,7 +66,7 @@ router.post('/', function(req, res) {
     }
 })
 
-router.get('/', function(req, res) {
+router.get('/:language', function(req, res) {
     res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     MongoClient.connect(url, function(err,db) {
         if (err) throw err
@@ -74,6 +74,13 @@ router.get('/', function(req, res) {
         dbo.collection(process.env.COLLECTION).find().toArray(function(err, results) {
             if (err) throw err
             if (results.length > 0) {
+                if (req.params.language) { 
+                    results.map((mediphor) => {
+                        if (mediphor.translations[req.params.language]) {
+                            mediphor.description = mediphor.translations[req.params.language].description
+                        }
+                    })   
+                }
                 console.log(results)
                 res.send(results)
             } else {
