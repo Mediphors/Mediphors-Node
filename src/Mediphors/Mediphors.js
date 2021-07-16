@@ -66,29 +66,60 @@ router.post('/', function(req, res) {
     }
 })
 
-router.get('/:language', function(req, res) {
+router.get('/', function(req, res) {
+    language = req.query.language
+    console.log(language)
     res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
+    newResult = []
+    description = ""
     MongoClient.connect(url, function(err,db) {
         if (err) throw err
         var dbo = db.db(process.env.DATABASE)
         dbo.collection(process.env.COLLECTION).find().toArray(function(err, results) {
             if (err) throw err
             if (results.length > 0) {
-                if (req.params.language) { 
+                if (language) { 
                     results.map((mediphor) => {
-                        if (mediphor.translations[req.params.language]) {
-                            mediphor.description = mediphor.translations[req.params.language].description
+                        description = mediphor.description
+                        if (mediphor.translations) {
+                            if (mediphor.translations[language]) {
+                                description = mediphor.translations[language].description
+                            }
                         }
+                        newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
+
                     })   
                 }
-                console.log(results)
-                res.send(results)
+                console.log(newResult)
+                res.send(newResult)
             } else {
                 console.log("No Mediphors")
                 res.send("")
             }
         })
     })
+})
+
+router.post('/translate', function(req, res) {
+    imageURL = req.body.mediphor.imageURL
+    translations = req.body.mediphor.translations
+    translations.push(req.body.translation)
+    var query = {imageURL: imageURL}
+    var newMediphor = {$set: {translations: translations}}
+    if (query) {
+        MongoClient.connect(url, function(err,db) {
+            if (err) throw err
+            var dbo = db.db(process.env.DATABASE)
+            dbo.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
+                if (err) throw err
+                else //console.log("Mediphor updated: \n", results)
+                res.send("200")
+            })
+        })
+    } else {
+        console.log("Empty Mediphor ID")
+        res.send("400")
+    }
 })
 
 router.post('/mediphor', function(req, res) {
