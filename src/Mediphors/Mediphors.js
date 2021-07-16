@@ -35,6 +35,7 @@ router.post('/', function(req, res) {
     description = req.body.description
     hashtags = parseHashtags(req.body.hashtags)
     imageURL = req.body.imageURL
+    translations = []
     console.log(description, hashtags, imageURL)
     inserted = false
 
@@ -46,7 +47,7 @@ router.post('/', function(req, res) {
             if (err) throw err
             var dbo = db.db(process.env.DATABASE)
             var query = {description: description}
-            var mediphorInfo = {description: description, hashtags: hashtags, imageURL: imageURL}
+            var mediphorInfo = {description: description, hashtags: hashtags, imageURL: imageURL, translations}
             dbo.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
                 if (err) throw err
                 if (results.length == 0) {
