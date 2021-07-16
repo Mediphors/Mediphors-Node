@@ -3,7 +3,7 @@ let router = express.Router()
 require('dotenv').config({path:'/../../.env'})
 let AWS = require('aws-sdk');
 
-AWS.config.update({accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, region: 'us-west-1'});
+AWS.config.update({accessKeyId: process.env.ACCESS_KEY_ID, secretAccessKey: process.env.SECRET_ACCESS_KEY, region: 'us-west-1'});
 let s3 = new AWS.S3();
 
 router.use(express.json())
@@ -131,7 +131,7 @@ router.post('/delete', function(req, res) {
     var query = {imageURL: imageURL}
     console.log(query)
     key = req.body.imageURL.split('/').pop()
-    var params = {  Bucket: process.env.AWS_BUCKET, Key: key};
+    var params = {  Bucket: process.env.BUCKET, Key: key};
     //console.log(params)
     MongoClient.connect(url, function(err,db) {
         if (err) throw err
