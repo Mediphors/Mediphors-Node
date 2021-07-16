@@ -78,19 +78,19 @@ router.get('/', function(req, res) {
         dbo.collection(process.env.COLLECTION).find().toArray(function(err, results) {
             if (err) throw err
             if (results.length > 0) {
-                if (language) {
-                    results.map((mediphor) => { 
-                        description = mediphor.description
+                results.map((mediphor) => { 
+                    description = mediphor.description
+                    if (language) {
                         if (mediphor.translations) {
                             if (mediphor.translations[language]) {
                                 description = mediphor.translations[language].description
                             }
                         }
                         newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
-                    })  
-                } else {
-                    newResult = results
-                }
+                    } else {
+                        newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
+                    }
+                })
                 console.log(newResult)
                 res.send(newResult)
             } else {
