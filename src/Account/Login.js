@@ -2,6 +2,7 @@ const express = require('express')
 const bcrypt = require ('bcrypt');
 const dotenv = require('dotenv')
 dotenv.config()
+
 var mongo = require( '../../mongoUtil' );
 const db = mongo.get().db(process.env.DATABASE)
 
@@ -17,7 +18,6 @@ router.use(myLogger)
 var url = process.env.MONGO_URI
 
 router.post('/', function(req, res) {
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     var username = req.body.username
     var password = req.body.password
     if (!username || !password) {
