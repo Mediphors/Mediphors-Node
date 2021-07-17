@@ -21,7 +21,6 @@ router.post('/', function(req, res) {
     //console.log(req.body)
     //console.log(req.body.key + " : " + key)
     if (req.body.key == key) {
-        res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
         var username = String(req.body.username)
         var password = String(req.body.password)
         inserted = false
