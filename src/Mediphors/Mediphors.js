@@ -1,7 +1,10 @@
 let express = require('express')
 let router = express.Router()
 require('dotenv').config({path:'/../../.env'})
-let AWS = require('aws-sdk');
+let AWS = require('aws-sdk')
+var mongoUtil = require( '../../mongoUtil' )
+var mongo = require( '../../mongoUtil' );
+const db = mongo.get().db(process.env.DATABASE)
 
 AWS.config.update({accessKeyId: process.env.ACCESS_KEY_ID, secretAccessKey: process.env.SECRET_ACCESS_KEY, region: 'us-west-1'});
 let s3 = new AWS.S3();
@@ -43,70 +46,60 @@ router.post('/', function(req, res) {
         console.log("error")
         res.send("Error")
     } else {
-        MongoClient.connect(url, function(err,db) {
+        var query = {description: description}
+        var mediphorInfo = {description: description, hashtags: hashtags, imageURL: imageURL, translations}
+        db.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
             if (err) throw err
-            var dbo = db.db(process.env.DATABASE)
-            var query = {description: description}
-            var mediphorInfo = {description: description, hashtags: hashtags, imageURL: imageURL, translations}
-            dbo.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
-                if (err) throw err
-                if (results.length == 0) {
-                    dbo.collection(process.env.COLLECTION).insertOne(mediphorInfo, function(err, result) {
-                        if (err) throw err
-                        console.log("Inserted: ", result['ops'])
-                        db.close()
-                        inserted = true
-                        res.send(result['ops'])
-                    })
-                } else {
-                    console.log("Mediphor already exists")
-                    key = req.body.imageURL.split('/').pop()
-                    var params = {Bucket: process.env.BUCKET, Key: key}
-                    s3.deleteObject(params, function(err, data) {
-                        if (err) console.log(err, err.stack);  // error
-                        else {
-                            console.log("Deleted image: " + key)
-                            res.send("304")
-                        }
-                    })
-                }
-            })
+            if (results.length == 0) {
+                db.collection(process.env.COLLECTION).insertOne(mediphorInfo, function(err, result) {
+                    if (err) throw err
+                    console.log("Inserted: ", result['ops'])
+                    inserted = true
+                    res.send(result['ops'])
+                })
+            } else {
+                console.log("Mediphor already exists")
+                key = req.body.imageURL.split('/').pop()
+                var params = {Bucket: process.env.BUCKET, Key: key}
+                s3.deleteObject(params, function(err, data) {
+                    if (err) console.log(err, err.stack);  // error
+                    else {
+                        console.log("Deleted image: " + key)
+                        res.send("304")
+                    }
+                })
+            }
         })
     }
 })
 
 router.get('/', function(req, res) {
     language = req.query.language
-    console.log(language)
     res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     newResult = []
     description = ""
-    MongoClient.connect(url, function(err,db) {
+    db.collection(process.env.COLLECTION).find().toArray(function(err, results) {
         if (err) throw err
-        var dbo = db.db(process.env.DATABASE)
-        dbo.collection(process.env.COLLECTION).find().toArray(function(err, results) {
-            if (err) throw err
-            if (results.length > 0) {
-                results.map((mediphor) => { 
-                    description = mediphor.description
-                    if (language) {
-                        if (mediphor.translations) {
-                            if (mediphor.translations[language]) {
-                                description = mediphor.translations[language].description
-                            }
+        if (results.length > 0) {
+            results.map((mediphor) => { 
+                description = mediphor.description
+                if (language) {
+                    if (mediphor.translations) {
+                        if (mediphor.translations[language]) {
+                            description = mediphor.translations[language].description
                         }
-                        newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
-                    } else {
-                        newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
                     }
-                })
-                console.log(newResult)
-                res.send(newResult)
-            } else {
-                console.log("No Mediphors")
-                res.send("")
-            }
-        })
+                    newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
+                } else {
+                    newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
+                }
+            })
+            console.log(newResult)
+            res.send(newResult)
+        } else {
+            console.log("No Mediphors")
+            res.send("")
+        }
     })
 })
 
@@ -117,14 +110,10 @@ router.post('/translate', function(req, res) {
     var query = {imageURL: imageURL}
     var newMediphor = {$set: {translations: translations}}
     if (query) {
-        MongoClient.connect(url, function(err,db) {
+        db.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
             if (err) throw err
-            var dbo = db.db(process.env.DATABASE)
-            dbo.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
-                if (err) throw err
-                else //console.log("Mediphor updated: \n", results)
-                res.send("200")
-            })
+            else //console.log("Mediphor updated: \n", results)
+            res.send("200")
         })
     } else {
         console.log("Empty Mediphor ID")
@@ -136,19 +125,15 @@ router.post('/mediphor', function(req, res) {
     res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     imageURL = req.body.imageURL
     var query = {imageURL: imageURL} 
-    MongoClient.connect(url, function(err,db) {
+    db.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
         if (err) throw err
-        var dbo = db.db(process.env(DATABASE))
-        dbo.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
-            if (err) throw err
-            if (results.length > 0) {
-                console.log(results)
-                res.send(results)
-            } else {
-                console.log("No Mediphor")
-                res.send("")
-            }
-        })
+        if (results.length > 0) {
+            console.log(results)
+            res.send(results)
+        } else {
+            console.log("No Mediphor")
+            res.send("")
+        }
     })
 })
 
@@ -159,14 +144,10 @@ router.post('/update', function(req, res) {
     var newMediphor = {$set: {description: req.body.description, hashtags: req.body.hashtags}}
     console.log(newMediphor)
     if (query) {
-        MongoClient.connect(url, function(err,db) {
+        db.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
             if (err) throw err
-            var dbo = db.db(process.env.DATABASE)
-            dbo.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
-                if (err) throw err
-                else //console.log("Mediphor updated: \n", results)
-                res.send("200")
-            })
+            else //console.log("Mediphor updated: \n", results)
+            res.send("200")
         })
     } else {
         console.log("Empty Mediphor ID")
@@ -182,19 +163,15 @@ router.post('/delete', function(req, res) {
     key = req.body.imageURL.split('/').pop()
     var params = {  Bucket: process.env.BUCKET, Key: key};
     //console.log(params)
-    MongoClient.connect(url, function(err,db) {
-        if (err) throw err
-        var dbo = db.db(process.env.DATABASE)
-        s3.deleteObject(params, function(err, data) {
-            if (err) console.log(err, err.stack);  // error
-            else {
-                dbo.collection(process.env.COLLECTION).deleteOne(query, function(err, results) {
-                    console.log(results['deletedCount'])
-                    if (err) throw err
-                    else res.send("200")
-                })
-            }
-        })
+    s3.deleteObject(params, function(err, data) {
+        if (err) console.log(err, err.stack);  // error
+        else {
+            db.collection(process.env.COLLECTION).deleteOne(query, function(err, results) {
+                console.log(results['deletedCount'])
+                if (err) throw err
+                else res.send("200")
+            })
+        }
     })
 })
 
