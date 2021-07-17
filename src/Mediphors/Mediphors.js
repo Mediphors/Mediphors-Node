@@ -1,6 +1,7 @@
 let express = require('express')
 let router = express.Router()
-require('dotenv').config({path:'/../../.env'})
+const dotenv = require('dotenv')
+dotenv.config()
 let AWS = require('aws-sdk')
 var mongoUtil = require( '../../mongoUtil' )
 var mongo = require( '../../mongoUtil' );
@@ -12,7 +13,7 @@ let s3 = new AWS.S3();
 router.use(express.json())
 router.use(express.urlencoded({ extended: true }))
 let myLogger = function (req, res, next) {
-    console.log('Mediphors LOGGED')
+    //console.log('/Mediphors logged')
     next()
 }
 router.use(myLogger)
@@ -21,20 +22,16 @@ let MongoClient = require('mongodb').MongoClient
 let url = process.env.MONGO_URI
 
 function parseHashtags(hashtags) {
-    console.log(hashtags)
-    let tempList = hashtags.split(' ')
-    console.log(tempList)
+    let hashtagList = hashtags.split(' ')
     let list = []
-    for (let i = 0; i < tempList.length; i++) {
-        if (tempList[i].includes('#'))
-            list.push(tempList[i])
+    for (let i = 0; i < hashtagList.length; i++) {
+        if (hashtagList[i].includes('#'))
+            list.push(hashtagList[i])
     }
-    console.log(list)
     return list
 }
 
 router.post('/', function(req, res) {
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     description = req.body.description
     hashtags = parseHashtags(req.body.hashtags)
     imageURL = req.body.imageURL
@@ -53,7 +50,7 @@ router.post('/', function(req, res) {
             if (results.length == 0) {
                 db.collection(process.env.COLLECTION).insertOne(mediphorInfo, function(err, result) {
                     if (err) throw err
-                    console.log("Inserted: ", result['ops'])
+                    //console.log("Inserted: ", result['ops'])
                     inserted = true
                     res.send(result['ops'])
                 })
@@ -75,7 +72,6 @@ router.post('/', function(req, res) {
 
 router.get('/', function(req, res) {
     language = req.query.language
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     newResult = []
     description = ""
     db.collection(process.env.COLLECTION).find().toArray(function(err, results) {
@@ -122,13 +118,12 @@ router.post('/translate', function(req, res) {
 })
 
 router.post('/mediphor', function(req, res) {
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     imageURL = req.body.imageURL
     var query = {imageURL: imageURL} 
     db.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
         if (err) throw err
         if (results.length > 0) {
-            console.log(results)
+            //console.log(results)
             res.send(results)
         } else {
             console.log("No Mediphor")
@@ -138,7 +133,6 @@ router.post('/mediphor', function(req, res) {
 })
 
 router.post('/update', function(req, res) {
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     let imageURL = req.body.imageURL
     language = req.body.language
     console.log(language)
@@ -179,18 +173,17 @@ router.post('/update', function(req, res) {
 })
 
 router.post('/delete', function(req, res) {  
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     let imageURL = req.body.imageURL
     var query = {imageURL: imageURL}
-    console.log(query)
+    //console.log(query)
     key = req.body.imageURL.split('/').pop()
-    var params = {  Bucket: process.env.BUCKET, Key: key};
+    var params = {Bucket: process.env.BUCKET, Key: key};
     //console.log(params)
     s3.deleteObject(params, function(err, data) {
         if (err) console.log(err, err.stack);  // error
         else {
             db.collection(process.env.COLLECTION).deleteOne(query, function(err, results) {
-                console.log(results['deletedCount'])
+                //console.log(results['deletedCount'])
                 if (err) throw err
                 else res.send("200")
             })
@@ -199,7 +192,6 @@ router.post('/delete', function(req, res) {
 })
 
 router.get('/upload', function(req, res) {
-    res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     var lambda = new AWS.Lambda();
     var params = {
         FunctionName: 's3uploader-UploadRequestFunction-CbEzNJT7gPtz'
@@ -211,7 +203,7 @@ router.get('/upload', function(req, res) {
         }
         else {
             payload = JSON.parse(data.Payload)
-            console.log(payload['body'])
+            //console.log(payload['body'])
             res.send(payload['body'])
         }
     });
