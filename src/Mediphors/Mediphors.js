@@ -60,6 +60,15 @@ router.post('/', function(req, res) {
                     })
                 } else {
                     console.log("Mediphor already exists")
+                    key = req.body.imageURL.split('/').pop()
+                    var params = {Bucket: process.env.BUCKET, Key: key}
+                    s3.deleteObject(params, function(err, data) {
+                        if (err) console.log(err, err.stack);  // error
+                        else {
+                            console.log("Deleted image: " + key)
+                            res.send("304")
+                        }
+                    })
                 }
             })
         })
