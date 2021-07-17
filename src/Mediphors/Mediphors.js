@@ -38,7 +38,7 @@ router.post('/', function(req, res) {
     description = req.body.description
     hashtags = parseHashtags(req.body.hashtags)
     imageURL = req.body.imageURL
-    translations = []
+    translations = {}
     console.log(description, hashtags, imageURL)
     inserted = false
 
@@ -94,7 +94,7 @@ router.get('/', function(req, res) {
                     newResult.push({description: description, hashtags: mediphor.hashtags, imageURL: mediphor.imageURL})
                 }
             })
-            console.log(newResult)
+            //console.log(newResult)
             res.send(newResult)
         } else {
             console.log("No Mediphors")
@@ -140,15 +140,38 @@ router.post('/mediphor', function(req, res) {
 router.post('/update', function(req, res) {
     res.cookie('cookie', 'value', { sameSite: 'none', secure: true });
     let imageURL = req.body.imageURL
+    language = req.body.language
+    console.log(language)
     var query = {imageURL: imageURL}
-    var newMediphor = {$set: {description: req.body.description, hashtags: req.body.hashtags}}
-    console.log(newMediphor)
     if (query) {
-        db.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
-            if (err) throw err
-            else //console.log("Mediphor updated: \n", results)
-            res.send("200")
-        })
+        if (language) {
+            db.collection(process.env.COLLECTION).find(query).toArray(function(err, results) {
+                if (err) throw err
+                if (results.length > 0) {
+                    console.log(results)
+                    translations = results[0].translations
+                    translations.push({[language]: {
+                        description: req.body.description
+                    }})
+                    var newMediphor = {$set: {translations: translations}}
+                    db.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
+                        if (err) throw err
+                        else //console.log("Mediphor updated: \n", results)
+                        res.send("200")
+                    })
+                } else {
+                    console.log("No Mediphor")
+                    res.send("")
+                }
+            })
+        } else {
+            var newMediphor = {$set: {description: req.body.description}}
+            db.collection(process.env.COLLECTION).updateOne(query, newMediphor, function(err, results) {
+                if (err) throw err
+                else //console.log("Mediphor updated: \n", results)
+                res.send("200")
+            })
+        }
     } else {
         console.log("Empty Mediphor ID")
         res.send("400")
