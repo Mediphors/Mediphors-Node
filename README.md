@@ -1,26 +1,58 @@
 # Mediphors-Node
 
-## Installation
+The backend API for the Mediphors website
 
-The listed libraries were used in the development of the project and must be installed for the code to properly run.
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install [scrapy](https://scrapy.org/) and [xlwt](https://pypi.org/project/xlwt/).
+---
+## Requirements
 
-```bash
-pip install scrapy
-pip install xlwt
-```
+For development, you will only need Node.js and a node global package, Yarn, installed in your environement.
 
-## Usage
-To run the program to retrieve N pages while N is an int. The program can be run with N set to 60 as default as well.
+### Node
+- #### Node installation on Windows
 
-```bash
-python main.py 100 # to run with N
-python main.py # to run with N=60 as default
-```
+  Just go on [official Node.js website](https://nodejs.org/) and download the installer.
+Also, be sure to have `git` available in your PATH, `npm` might need it (You can find git [here](https://git-scm.com/)).
 
-Once the program is ran it will create the index and prompt the user to enter a word to search. If the user enters 'stop' (case-insensitive) the program will cease execution. 
-```bash
-Enter a query: smu moore # to search for 'smu moore' in the index
-Enter a query: stop # to stop the program
-```
-The program will first parse the query into individual tokens and determine if each token is a word and if the word is in the index. If it is then the program will calculate the weights of each word in the documents that each token is in using NTC similarity. Then the program calculates the query weight of each token and calcualtes the q prime number for each token. Using this data the program calculates the NTC.NTC document score of each document containing the tokens. If the token is in the title of a document then .1 is added to the score of the document. The program then prints out the top documents and scores up to the top 5 documents. Finally the program prompts the user for another query and repeats this cycle indefinitely until the word stop is inputted. 
+- #### Node installation on Ubuntu
+
+  You can install nodejs and npm easily with apt install, just run the following commands.
+
+      $ sudo apt install nodejs
+      $ sudo apt install npm
+
+- #### Other Operating Systems
+  You can find more information about the installation on the [official Node.js website](https://nodejs.org/) and the [official NPM website](https://npmjs.org/).
+
+If the installation was successful, you should be able to run the following command.
+
+    $ node --version
+    v8.11.3
+
+    $ npm --version
+    6.1.0
+
+If you need to update `npm`, you can update it using `npm`! Just run this command and it will update npm. This command may need extra permission so either use sudo before the command or run cmd as admin.
+
+    $ npm install npm -g
+
+---
+
+## Install
+
+    $ git clone https://github.com/Mediphors/Mediphors-Node
+    $ npm install
+
+## Running the project 
+
+To have the node server restart on changes run with nodemon
+
+    $ nodemon start
+
+To run the node server normally
+
+    $ npm start
+
+
+## Simple build for production
+
+    $ npm build
