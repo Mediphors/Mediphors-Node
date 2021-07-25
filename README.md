@@ -40,6 +40,7 @@ If you need to update `npm`, you can update it using `npm`! Just run this comman
 ## Install
 
     $ git clone https://github.com/Mediphors/Mediphors-Node
+    $ cd Mediphors-Node
     $ npm install
 
 ## Running the project 
